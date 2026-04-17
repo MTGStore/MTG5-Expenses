@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marts To Go 5 - Expense Entry</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #d32f2f;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #d32f2f;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #333;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .required {
+            color: red;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #d32f2f;
+            box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .section {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 5px solid #d32f2f;
+        }
+
+        .section-title {
+            font-size: 14px;
+            color: #d32f2f;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .expense-entry {
+            background: white;
+            padding: 20px;
+            border: 2px solid #f0f0f0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .expense-entry-header {
+            font-size: 13px;
+            color: #d32f2f;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .expense-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .expense-grid.full {
+            grid-template-columns: 1fr;
+        }
+
+        .remove-btn {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .remove-btn:hover {
+            background: #b71c1c;
+        }
+
+        .add-expense-btn {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .add-expense-btn:hover {
+            background: #b71c1c;
+        }
+
+        button.submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+
+        button.submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(211, 47, 47, 0.4);
+        }
+
+        button.submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #d32f2f;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #d32f2f;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">📝</div>
+            <div class="title">Marts To Go 5 - Rock Hill</div>
+            <div class="subtitle">Expense Entry Form</div>
+            <div class="badge">💳 EXPENSES (Columns AF-SK)</div>
+        </div>
+
+        <div class="info-box">
+            ℹ️ <strong>Add as many expenses as you need for the date</strong>, then click "Submit All Expenses"
+        </div>
+
+        <form id="expenseForm">
+            <div class="section">
+                <div class="section-title">📅 Expense Date</div>
+                <div class="form-group full">
+                    <label>Date <span class="required">*</span></label>
+                    <input type="date" id="expenseDate" name="expenseDate" required>
+                </div>
+            </div>
+
+            <div id="expensesContainer"></div>
+
+            <button type="button" class="add-expense-btn" onclick="addExpenseEntry()">+ Add Expense</button>
+
+            <button type="submit" id="submitBtn" class="submit-btn">Submit All Expenses</button>
+            <div id="statusMessage" class="status-message"></div>
+        </form>
+    </div>
+
+    <script>
+        const APPS_SCRIPT_URL_EXPENSES = "https://script.google.com/macros/s/AKfycbyRtPRrewpp8pbtKeD3xdnrnPMTZtqouN85LPB6fV3AmA4MP6RU2ACBb2I8ZdMJKfhR/exec";
+
+        const form = document.getElementById('expenseForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        let expenseCount = 0;
+
+        // Add initial expense entry
+        window.addEventListener('load', function() {
+            addExpenseEntry();
+        });
+
+        function addExpenseEntry() {
+            const container = document.getElementById('expensesContainer');
+            expenseCount++;
+            
+            const expenseHTML = `
+                <div class="expense-entry" id="expense-${expenseCount}">
+                    <div class="expense-entry-header">Expense #${expenseCount}</div>
+                    <div class="expense-grid">
+                        <div class="form-group">
+                            <label>Description</label>
+                            <input type="text" name="description_${expenseCount}" class="expense-description" placeholder="e.g., Office supplies">
+                        </div>
+                        <div class="form-group">
+                            <label>Amount</label>
+                            <input type="number" name="amount_${expenseCount}" class="expense-amount" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>Payment Type</label>
+                            <select name="paymentType_${expenseCount}" class="expense-payment-type">
+                                <option value="">Select Type</option>
+                                <option value="Cash">Cash</option>
+                                <option value="Credit Card">Credit Card</option>
+                                <option value="Check">Check</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Notes</label>
+                            <textarea name="notes_${expenseCount}" class="expense-notes" placeholder="Additional notes"></textarea>
+                        </div>
+                    </div>
+                    <button type="button" class="remove-btn" onclick="removeExpenseEntry(${expenseCount})">✕ Remove Expense</button>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', expenseHTML);
+        }
+
+        function removeExpenseEntry(id) {
+            const element = document.getElementById(`expense-${id}`);
+            if (element) {
+                element.remove();
+            }
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const expenseDate = document.getElementById('expenseDate').value;
+            if (!expenseDate) {
+                statusMessage.className = 'status-message error';
+                statusMessage.innerHTML = '❌ Please select an expense date!';
+                statusMessage.style.display = 'block';
+                return;
+            }
+
+            statusMessage.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span>Submitting...';
+
+            // Collect all expenses
+            const expenses = [];
+            document.querySelectorAll('.expense-entry').forEach((entry, index) => {
+                const description = entry.querySelector('.expense-description').value;
+                const amount = entry.querySelector('.expense-amount').value;
+                const paymentType = entry.querySelector('.expense-payment-type').value;
+                const notes = entry.querySelector('.expense-notes').value;
+                
+                if (description || amount || paymentType || notes) {
+                    expenses.push({
+                        expenseDate: expenseDate,
+                        description: description || null,
+                        amount: parseFloat(amount) || null,
+                        paymentType: paymentType || null,
+                        notes: notes || null
+                    });
+                }
+            });
+
+            if (expenses.length === 0) {
+                statusMessage.className = 'status-message error';
+                statusMessage.innerHTML = '❌ Please add at least one expense!';
+                statusMessage.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Submit All Expenses';
+                return;
+            }
+
+            const formData = {
+                expenses: expenses,
+                isExpenseOnly: true
+            };
+
+            try {
+                const response = await fetch(APPS_SCRIPT_URL_EXPENSES, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(formData),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                statusMessage.className = 'status-message success';
+                statusMessage.innerHTML = `✅ Success! ${expenses.length} expense(s) submitted.`;
+                statusMessage.style.display = 'block';
+
+                // Clear expenses but keep date
+                document.getElementById('expensesContainer').innerHTML = '';
+                addExpenseEntry();
+
+            } catch (error) {
+                statusMessage.className = 'status-message error';
+                statusMessage.innerHTML = '❌ Error: ' + error.message;
+                statusMessage.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Submit All Expenses';
+            }
+        });
+    </script>
+</body>
+</html>
