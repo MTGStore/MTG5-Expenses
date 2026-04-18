@@ -270,7 +270,7 @@
             <div class="logo">📝</div>
             <div class="title">Marts To Go 5 - Rock Hill</div>
             <div class="subtitle">Expense Entry Form</div>
-            <div class="badge">💳 EXPENSES (Columns AF-SK)</div>
+            <div class="badge">💳 EXPENSES (Columns AG-AK)</div>
         </div>
 
         <div class="info-box">
@@ -296,7 +296,7 @@
     </div>
 
     <script>
-        const APPS_SCRIPT_URL_EXPENSES = "https://script.google.com/macros/s/AKfycbyRtPRrewpp8pbtKeD3xdnrnPMTZtqouN85LPB6fV3AmA4MP6RU2ACBb2I8ZdMJKfhR/exec";
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoH9l7ioDFIc1TcIDfMk4mGPJsxXcz-9kZ-A9E2Y-wdooB_6WiT9BQIUMEngTAoA/exec";
 
         const form = document.getElementById('expenseForm');
         const submitBtn = document.getElementById('submitBtn');
@@ -325,6 +325,10 @@
                             <input type="number" name="amount_${expenseCount}" class="expense-amount" step="0.01" placeholder="0.00">
                         </div>
                         <div class="form-group">
+                            <label>Category</label>
+                            <input type="text" name="category_${expenseCount}" class="expense-category" placeholder="e.g., Supplies">
+                        </div>
+                        <div class="form-group">
                             <label>Payment Type</label>
                             <select name="paymentType_${expenseCount}" class="expense-payment-type">
                                 <option value="">Select Type</option>
@@ -333,10 +337,6 @@
                                 <option value="Check">Check</option>
                                 <option value="Other">Other</option>
                             </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Notes</label>
-                            <textarea name="notes_${expenseCount}" class="expense-notes" placeholder="Additional notes"></textarea>
                         </div>
                     </div>
                     <button type="button" class="remove-btn" onclick="removeExpenseEntry(${expenseCount})">✕ Remove Expense</button>
@@ -352,7 +352,7 @@
                 element.remove();
             }
         }
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoH9l7ioDFIc1TcIDfMk4mGPJsxXcz-9kZ-A9E2Y-wdooB_6WiT9BQIUMEngTAoA/exec";
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -368,26 +368,28 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoH9l7ioDFIc1T
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner"></span>Submitting...';
 
-            // Collect all expenses
-            const expenses = [];
-            document.querySelectorAll('.expense-entry').forEach((entry, index) => {
+            // Create FormData object
+            const formDataObj = new FormData();
+            formDataObj.append('expenseDate', expenseDate);
+
+            // Collect all expenses and add to FormData
+            let expenseCount = 0;
+            document.querySelectorAll('.expense-entry').forEach((entry) => {
                 const description = entry.querySelector('.expense-description').value;
                 const amount = entry.querySelector('.expense-amount').value;
+                const category = entry.querySelector('.expense-category').value;
                 const paymentType = entry.querySelector('.expense-payment-type').value;
-                const notes = entry.querySelector('.expense-notes').value;
                 
-                if (description || amount || paymentType || notes) {
-                    expenses.push({
-                        expenseDate: expenseDate,
-                        description: description || null,
-                        amount: parseFloat(amount) || null,
-                        paymentType: paymentType || null,
-                        notes: notes || null
-                    });
+                if (description || amount || category || paymentType) {
+                    expenseCount++;
+                    formDataObj.append('description_' + expenseCount, description || '');
+                    formDataObj.append('amount_' + expenseCount, amount || '0');
+                    formDataObj.append('category_' + expenseCount, category || '');
+                    formDataObj.append('paymentType_' + expenseCount, paymentType || '');
                 }
             });
 
-            if (expenses.length === 0) {
+            if (expenseCount === 0) {
                 statusMessage.className = 'status-message error';
                 statusMessage.innerHTML = '❌ Please add at least one expense!';
                 statusMessage.style.display = 'block';
@@ -396,23 +398,19 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoH9l7ioDFIc1T
                 return;
             }
 
-            const formData = {
-                expenses: expenses,
-                isExpenseOnly: true
-            };
-
             try {
-                const response = await fetch("https://script.google.com/macros/s/AKfycbwoH9l7ioDFIc1TcIDfMk4mGPJsxXcz-9kZ-A9E2Y-wdooB_6WiT9BQIUMEngTAoA/exec", {
+                console.log("Submitting to: " + APPS_SCRIPT_URL);
+                console.log("Expenses count: " + expenseCount);
+
+                const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify(formData),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    body: formDataObj
                 });
 
+                console.log("Response status: " + response.status);
+
                 statusMessage.className = 'status-message success';
-                statusMessage.innerHTML = `✅ Success! ${expenses.length} expense(s) submitted.`;
+                statusMessage.innerHTML = `✅ Success! ${expenseCount} expense(s) submitted.`;
                 statusMessage.style.display = 'block';
 
                 // Clear expenses but keep date
@@ -420,6 +418,7 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoH9l7ioDFIc1T
                 addExpenseEntry();
 
             } catch (error) {
+                console.log("Error: " + error.message);
                 statusMessage.className = 'status-message error';
                 statusMessage.innerHTML = '❌ Error: ' + error.message;
                 statusMessage.style.display = 'block';
